@@ -1,0 +1,14 @@
+{
+  "name": "palma-coin",
+  "version": "1.0.0",
+  "description": "Palma Coin - Sistema de Economía Conductual para Las Palmas School",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "cd client && npm install && npm run build",
+    "setup": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["classroom", "economy", "education", "palma-coin"],
+  "author": "Ruddy Ribera - Las Palmas School",
+  "license": "MIT"
+}
