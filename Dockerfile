@@ -5,12 +5,10 @@ WORKDIR /app
 # Install dependencies for sql.js (native compilation)
 RUN apk add --no-cache python3 make g++
 
-# Copy package files
-COPY package*.json ./
-COPY server/package*.json ./server/
-COPY client/package*.json ./client/
+# Copy all source files
+COPY . .
 
-# Install all dependencies
+# Install dependencies and build
 RUN npm install && \
     cd server && npm install && \
     cd ../client && npm install && \
