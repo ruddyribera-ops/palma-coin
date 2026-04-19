@@ -56,7 +56,7 @@ export default function Layout({ children }) {
                 🎓 {user.name}
               </div>
             )}
-            <button className="btn btn-sm btn-secondary" onClick={handleLogout}>
+            <button className="btn btn-sm btn-secondary ripple" onClick={handleLogout}>
               Salir
             </button>
           </div>

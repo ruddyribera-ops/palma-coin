@@ -2,6 +2,37 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
 
+// Confetti component
+function Confetti() {
+  const colors = ['#FFD700', '#1877F2', '#E74C3C', '#00A86B', '#833AB4']
+  const pieces = [...Array(50)].map((_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 0.5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    size: Math.random() * 8 + 6
+  }))
+
+  return (
+    <div className="confetti-container">
+      {pieces.map(p => (
+        <div
+          key={p.id}
+          className="confetti-piece"
+          style={{
+            left: `${p.left}%`,
+            animationDelay: `${p.delay}s`,
+            background: p.color,
+            width: p.size,
+            height: p.size,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px'
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function Rewards() {
   const [rewards, setRewards] = useState([])
   const [students, setStudents] = useState([])
@@ -10,6 +41,8 @@ export default function Rewards() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [selectedReward, setSelectedReward] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [purchaseSuccess, setPurchaseSuccess] = useState(null)
   const { isTeacher, user } = useAuth()
 
   const [form, setForm] = useState({
@@ -59,7 +92,7 @@ export default function Rewards() {
     }
   }
 
-  const handlePurchase = async (studentId) => {
+  const handlePurchase = async (studentId, studentName) => {
     if (!selectedReward) return
 
     try {
@@ -75,16 +108,50 @@ export default function Rewards() {
 
       setShowPurchaseModal(false)
       setSelectedReward(null)
+      setShowConfetti(true)
+      setPurchaseSuccess({ name: selectedReward.name, student: studentName })
+      setTimeout(() => {
+        setShowConfetti(false)
+        setPurchaseSuccess(null)
+      }, 3000)
       loadData()
     } catch (err) {
       alert('Error: ' + err.message)
     }
   }
 
-  if (loading) return <div className="empty-state">Cargando...</div>
+  if (loading) return (
+    <div style={{ padding: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="skeleton-card" style={{ height: '200px' }} />
+        ))}
+      </div>
+      <div className="skeleton-card" style={{ height: '150px' }} />
+    </div>
+  )
 
   return (
     <div>
+      {showConfetti && <Confetti />}
+
+      {purchaseSuccess && (
+        <div className="vote-confirmed" style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1000,
+          background: 'white'
+        }}>
+          <div className="vote-confirmed-icon">🎉</div>
+          <div>
+            <strong>¡Canjeado!</strong>
+            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{purchaseSuccess.student} canjeó "{purchaseSuccess.name}"</p>
+          </div>
+        </div>
+      )}
+
       <div className="page-header">
         <div className="page-title">
           <div className="page-title-icon">🎁</div>
@@ -97,46 +164,61 @@ export default function Rewards() {
 
       {isTeacher && (
         <div style={{ marginBottom: '1.5rem' }}>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          <button className="btn btn-primary ripple" onClick={() => setShowModal(true)}>
             ➕ Agregar Recompensa
           </button>
         </div>
       )}
 
       {/* Rewards Grid */}
-      <div className="rewards-grid">
-        {rewards.map(reward => {
-          const isMaxed = reward.max_uses && reward.current_uses >= reward.max_uses
+      {rewards.length === 0 ? (
+        <div className="card">
+          <div className="empty-state-container">
+            <div className="empty-state-icon-animated">🎁</div>
+            <h3>No hay recompensas</h3>
+            <p>Agrega recompensas desde el botón de arriba para que los estudiantes puedan canjearlas.</p>
+            {isTeacher && (
+              <button className="btn btn-primary ripple" onClick={() => setShowModal(true)}>
+                ➕ Crear primera recompensa
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="rewards-grid">
+          {rewards.map(reward => {
+            const isMaxed = reward.max_uses && reward.current_uses >= reward.max_uses
 
-          return (
-            <div
-              key={reward.id}
-              className={`reward-card ${isMaxed ? 'claimed' : ''}`}
-              onClick={() => !isMaxed && isTeacher && (setSelectedReward(reward), setShowPurchaseModal(true))}
-            >
-              <div className="reward-icon">🎁</div>
-              <h4>{reward.name}</h4>
-              <p>{reward.description}</p>
-              <div className="reward-cost">
-                {reward.cost_likes ? (
-                  <>
-                    👍 <span className="likes">{reward.cost_likes} Likes</span>
-                  </>
-                ) : (
-                  <>
-                    ❤️ <span className="hearts">{reward.cost_hearts} Hearts</span>
-                  </>
+            return (
+              <div
+                key={reward.id}
+                className="reward-card"
+                onClick={() => !isMaxed && isTeacher && (setSelectedReward(reward), setShowPurchaseModal(true))}
+              >
+                <div className="reward-icon">🎁</div>
+                <h4>{reward.name}</h4>
+                <p>{reward.description}</p>
+                <div className="reward-cost">
+                  {reward.cost_likes ? (
+                    <>
+                      👍 <span className="likes">{reward.cost_likes} Likes</span>
+                    </>
+                  ) : (
+                    <>
+                      ❤️ <span className="hearts">{reward.cost_hearts} Hearts</span>
+                    </>
+                  )}
+                </div>
+                {reward.max_uses && (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                    {reward.current_uses}/{reward.max_uses} canjeados
+                  </p>
                 )}
               </div>
-              {reward.max_uses && (
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                  {reward.current_uses}/{reward.max_uses} canjeados
-                </p>
-              )}
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Recent Purchases */}
       {purchases.length > 0 && (
@@ -158,7 +240,7 @@ export default function Rewards() {
               </thead>
               <tbody>
                 {purchases.slice(0, 10).map(purchase => (
-                  <tr key={purchase.id}>
+                  <tr key={purchase.id} className="student-row">
                     <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{purchase.student_name}</td>
                     <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{purchase.reward_name}</td>
                     <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
@@ -269,23 +351,22 @@ export default function Rewards() {
                   return (
                     <div
                       key={student.id}
-                      onClick={() => canAfford && handlePurchase(student.id)}
+                      onClick={() => canAfford && handlePurchase(student.id, student.name)}
+                      className="student-card ripple"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.75rem',
                         marginBottom: '0.5rem',
-                        background: canAfford ? 'rgba(45, 139, 78, 0.05)' : 'rgba(0,0,0,0.02)',
-                        borderRadius: 'var(--radius-md)',
                         cursor: canAfford ? 'pointer' : 'not-allowed',
                         opacity: canAfford ? 1 : 0.5
                       }}
                     >
-                      <span style={{ fontWeight: 600 }}>{student.name}</span>
+                      <div className="student-avatar">{student.name.charAt(0)}</div>
+                      <div className="student-info" style={{ flex: 1 }}>
+                        <h4>{student.name}</h4>
+                      </div>
                       <span style={{
                         color: selectedReward.cost_likes ? 'var(--like-blue)' : 'var(--heart-red)',
-                        fontWeight: 700
+                        fontWeight: 700,
+                        fontSize: '0.9rem'
                       }}>
                         {balance} / {cost}
                       </span>
