@@ -177,7 +177,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div className="dashboard-grid">
         {/* Top Students */}
         <div className="card">
           <div className="card-header">
@@ -255,7 +255,7 @@ export default function Dashboard() {
       {isTeacher && (
         <div style={{ marginTop: '2rem' }}>
           <h3 style={{ marginBottom: '1rem' }}>Acciones Rápidas</h3>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className="quick-actions" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
             <Link to="/grid" className="btn btn-primary ripple">
               📝 Registrar Hoy
             </Link>
