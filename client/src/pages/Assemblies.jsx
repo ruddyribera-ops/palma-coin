@@ -56,6 +56,26 @@ export default function Assemblies() {
     }
   }
 
+  const handleCloseAssembly = async (assemblyId) => {
+    if (!confirm('¿Estás seguro de que deseas cerrar esta asamblea? Ya no se podrán emitir más votos.')) {
+      return
+    }
+    try {
+      await api.closeAssembly(assemblyId)
+      loadData()
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const hasVoted = (assembly) => {
+    if (!user) return false
+    // If API returns user_vote on assembly, use that
+    if (assembly.user_vote) return true
+    // Otherwise check via votes endpoint for teachers
+    return false
+  }
+
   if (loading) return <div className="empty-state">Cargando...</div>
 
   return (
@@ -100,16 +120,54 @@ export default function Assemblies() {
                     {new Date(assembly.date).toLocaleDateString()}
                   </p>
                 </div>
-                <span className={`badge ${assembly.status === 'active' ? 'badge-success' : 'badge-warning'}`}>
-                  {assembly.status === 'active' ? '🟢 Activa' : '🔴 Cerrada'}
-                </span>
+                {assembly.status === 'closed' ? (
+                  <span className="badge badge-warning" style={{ background: 'rgba(148, 148, 148, 0.15)', color: '#666' }}>
+                    🔴 CERRADA
+                  </span>
+                ) : (
+                  <span className="badge badge-success">
+                    🟢 Activa
+                  </span>
+                )}
               </div>
               <div className="card-body">
                 {assembly.description && (
-                  <p style={{ marginBottom: '1.5rem' }}>{assembly.description}</p>
+                  <p style={{ marginBottom: '1rem' }}>{assembly.description}</p>
                 )}
 
-                {assembly.status === 'active' ? (
+                {/* Vote Tally - Always show if we have vote_count */}
+                {assembly.vote_count > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    gap: '1.5rem',
+                    padding: '1rem',
+                    background: 'var(--bg-primary)',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: '1rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>✅</span>
+                      <span style={{ fontWeight: '700', color: 'var(--palm-green)' }}>{assembly.yes_votes || 0}</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>A favor</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>❌</span>
+                      <span style={{ fontWeight: '700', color: 'var(--ig-red)' }}>{assembly.no_votes || 0}</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>En contra</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>⬜</span>
+                      <span style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>{assembly.abstain_votes || 0}</span>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Abstención</span>
+                    </div>
+                    <div style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      Total: <strong>{assembly.vote_count}</strong> votos
+                    </div>
+                  </div>
+                )}
+
+                {/* Voting buttons - only for active assemblies without user vote */}
+                {assembly.status === 'active' && !assembly.user_vote && (
                   <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
                       className="btn btn-primary"
@@ -133,8 +191,24 @@ export default function Assemblies() {
                       ⬜ Abstención
                     </button>
                   </div>
-                ) : (
-                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                )}
+
+                {/* Teacher: show close button on active assemblies */}
+                {isTeacher && assembly.status === 'active' && (
+                  <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => handleCloseAssembly(assembly.id)}
+                      style={{ background: 'var(--gradient-red)', color: 'white' }}
+                    >
+                      🔒 Cerrar Asamblea
+                    </button>
+                  </div>
+                )}
+
+                {/* Closed message */}
+                {assembly.status === 'closed' && (
+                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
                     Esta asamblea ha sido cerrada
                   </p>
                 )}

@@ -4,7 +4,6 @@
 
 [railway.variables]
   NODE_ENV = "production"
-  PORT = "8080"
 
 [deploy]
   restartPolicyType = "ON_FAILURE"

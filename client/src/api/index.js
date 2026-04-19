@@ -6,16 +6,10 @@ async function request(endpoint, options = {}) {
     ...options.headers
   };
 
-  const user = localStorage.getItem('palma_user');
-  if (user) {
-    const userData = JSON.parse(user);
-    headers['x-user-name'] = userData.name;
-    headers['x-user-role'] = userData.role;
-  }
-
   const res = await fetch(`${API_URL}${endpoint}`, {
     ...options,
-    headers
+    headers,
+    credentials: 'include'
   });
 
   if (!res.ok) {
@@ -56,7 +50,9 @@ export const api = {
   // Assemblies
   getAssemblies: () => request('/assemblies'),
   addAssembly: (data) => request('/assemblies', { method: 'POST', body: JSON.stringify(data) }),
+  closeAssembly: (id) => request(`/assemblies/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'closed' }) }),
   voteAssembly: (id, data) => request(`/assemblies/${id}/vote`, { method: 'POST', body: JSON.stringify(data) }),
+  getAssemblyVotes: (id) => request(`/assemblies/${id}/votes`),
 
   // Stats
   getStats: () => request('/stats'),

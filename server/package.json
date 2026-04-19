@@ -9,9 +9,13 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "sql.js": "^1.12.0",
-    "ws": "^8.18.0"
+    "express-rate-limit": "^7.x",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
+    "ws": "^8.18.0",
+    "zod": "^4.3.6"
   }
 }
