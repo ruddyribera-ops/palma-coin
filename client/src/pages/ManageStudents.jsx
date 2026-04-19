@@ -163,7 +163,7 @@ export default function ManageStudents() {
                           fontSize: '0.85rem',
                           color: visiblePasswords[user.id] ? '#1e40af' : '#64748b'
                         }}>
-                          {visiblePasswords[user.id] ? user.plain_password : '••••••••'}
+                          {visiblePasswords[user.id] ? '••••••••' : '••••••••'}
                         </code>
                         <button
                           className="btn btn-xs btn-ghost"
@@ -232,7 +232,7 @@ export default function ManageStudents() {
                     placeholder="Ingresa nueva contraseña para cambiar"
                   />
                   <small style={{ color: '#666', fontSize: '0.75rem' }}>
-                    Contraseña actual: <strong>{editingUser?.plain_password}</strong>
+                    Dejar vacío para mantener la contraseña actual
                   </small>
                 </div>
               </div>
