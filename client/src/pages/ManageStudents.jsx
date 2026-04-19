@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../api'
 
 export default function ManageStudents() {
   const { isTeacher } = useAuth()
@@ -19,12 +20,10 @@ export default function ManageStudents() {
 
   const fetchData = async () => {
     try {
-      const [studentsRes, usersRes] = await Promise.all([
-        fetch('/api/students'),
-        fetch('/api/users')
+      const [studentsData, usersData] = await Promise.all([
+        api.getStudents(),
+        api.getUsers().catch(() => [])  // fallback if endpoint fails
       ])
-      const studentsData = await studentsRes.json()
-      const usersData = await usersRes.json()
       setStudents(studentsData)
       setUsers(usersData)
     } catch (err) {
@@ -75,6 +74,7 @@ export default function ManageStudents() {
         await fetch(`/api/users/${user.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             email: editForm.email || undefined,
             password: editForm.password || undefined
@@ -94,6 +94,7 @@ export default function ManageStudents() {
         await fetch(`/api/students/${editingStudent.id}/balance`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             likes: newLikes,
             hearts: newHearts,

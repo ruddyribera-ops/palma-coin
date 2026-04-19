@@ -54,6 +54,9 @@ export const api = {
   voteAssembly: (id, data) => request(`/assemblies/${id}/vote`, { method: 'POST', body: JSON.stringify(data) }),
   getAssemblyVotes: (id) => request(`/assemblies/${id}/votes`),
 
+  // Users
+  getUsers: () => request('/users'),
+
   // Stats
   getStats: () => request('/stats'),
 
