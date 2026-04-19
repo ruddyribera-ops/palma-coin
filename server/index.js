@@ -390,30 +390,19 @@ async function seedIfEmpty() {
 
 // ─── Auth middleware ────────────────────────────────────────────────────────
 
-// Authenticate — verifies JWT from httpOnly cookie OR falls back to legacy header (for transition period only)
+// Authenticate — verifies JWT from httpOnly cookie only (Phase 3: header fallback removed — spoofing risk)
 async function authenticate(req, res, next) {
-  // Try cookie first (JWT)
+  // JWT from httpOnly cookie — the only trusted auth mechanism
   const token = req.cookies.palma_token;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded;
-      return next();
-    } catch (e) {
-      // Token invalid/expired — fall through to header check for backward compat
-    }
-  }
+  if (!token) return res.status(401).json({ error: 'No autenticado' });
 
-  // Fallback: legacy header-based auth (Phase 2 transition only — remove in Phase 3)
-  const headerRole = req.headers['x-user-role'];
-  const headerUser = req.headers['x-user-name'];
-  if (headerRole && headerUser) {
-    // Trust the header for now (Phase 2), but log it
-    req.user = { role: headerRole, name: headerUser };
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
     return next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Token inválido o expirado' });
   }
-
-  return res.status(401).json({ error: 'No autenticado' });
 }
 
 // requireTeacher — checks req.user.role after authenticate() runs
