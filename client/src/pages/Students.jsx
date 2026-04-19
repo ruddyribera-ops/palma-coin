@@ -13,7 +13,7 @@ function ProgressBar({ value, max, type }) {
   return (
     <div className="progress-bar-container" style={{ marginTop: '0.5rem' }}>
       <div className="progress-bar-track" style={{ maxWidth: '80px' }}>
-        <div className={`progress-bar-fill ${type}`} style={{ width: `${width}%` }} />
+        <div className={`progress-bar-fill ${type}`} style={{ width: `${width}%` }} data-empty={value === 0 ? 'true' : undefined} />
       </div>
       <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{value}</span>
     </div>
@@ -91,7 +91,7 @@ export default function Students() {
   )
 
   const maxLikes = Math.max(...students.map(s => s.likes_balance), 0)
-  const maxHearts = Math.max(...students.map(s => s.hearts_balance), 1)
+  const maxHearts = Math.max(...students.map(s => s.hearts_balance), 0)
   const top3 = students.slice(0, 3)
 
   return (
