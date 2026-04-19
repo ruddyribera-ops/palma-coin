@@ -63,7 +63,11 @@ function ProgressBar({ value, max, type }) {
   return (
     <div className="progress-bar-container" ref={ref}>
       <div className="progress-bar-track">
-        <div className={`progress-bar-fill ${type}`} style={{ width: `${width}%` }} />
+        <div
+          className={`progress-bar-fill ${type}`}
+          style={{ width: `${width}%` }}
+          data-empty={value === 0 ? 'true' : undefined}
+        />
       </div>
       <span style={{ fontWeight: 700, fontSize: '0.85rem', minWidth: '40px' }}>{value}</span>
     </div>

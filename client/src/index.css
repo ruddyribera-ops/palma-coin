@@ -1109,6 +1109,10 @@ h4 { font-size: 1.25rem; }
   animation: shimmer 2s infinite;
 }
 
+.progress-bar-fill[data-empty="true"]::after {
+  display: none;
+}
+
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }

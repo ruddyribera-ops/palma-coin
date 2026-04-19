@@ -90,7 +90,7 @@ export default function Students() {
     </div>
   )
 
-  const maxLikes = Math.max(...students.map(s => s.likes_balance), 1)
+  const maxLikes = Math.max(...students.map(s => s.likes_balance), 0)
   const maxHearts = Math.max(...students.map(s => s.hearts_balance), 1)
   const top3 = students.slice(0, 3)
 
