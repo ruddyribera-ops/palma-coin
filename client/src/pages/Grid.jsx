@@ -9,6 +9,7 @@ export default function Grid() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [grid, setGrid] = useState({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState(null)
   const { isTeacher } = useAuth()
@@ -19,6 +20,7 @@ export default function Grid() {
 
   const loadData = async () => {
     try {
+      setError(null)
       const [studentsData, subjectsData] = await Promise.all([
         api.getStudents(),
         api.getSubjects()
@@ -30,6 +32,7 @@ export default function Grid() {
       }
     } catch (err) {
       console.error('Failed to load data:', err)
+      setError(err.message || 'Error al cargar datos')
     } finally {
       setLoading(false)
     }
@@ -100,6 +103,45 @@ export default function Grid() {
     <div style={{ padding: '2rem' }}>
       <div className="skeleton-card" style={{ marginBottom: '1.5rem', height: '80px' }} />
       <div className="skeleton-card" style={{ height: '400px' }} />
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ padding: '2rem' }}>
+      <div className="card">
+        <div className="empty-state-container">
+          <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>😕</div>
+          <h3>Error al cargar datos</h3>
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadData}>Reintentar</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (students.length === 0) return (
+    <div style={{ padding: '2rem' }}>
+      <div className="page-header">
+        <div className="page-title">
+          <div className="page-title-icon">📝</div>
+          <div>
+            <h1>Registro Diario</h1>
+            <p className="page-subtitle">Registra likes y corazones por materia</p>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="empty-state-container">
+          <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>👥</div>
+          <h3>No hay estudiantes registrados</h3>
+          <p>Primero debes agregar estudiantes para poder registrar transacciones.</p>
+          {isTeacher && (
+            <a href="/students" className="btn btn-primary ripple">
+              ➕ Ir a gestionar estudiantes
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   )
 

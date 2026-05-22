@@ -77,6 +77,7 @@ function ProgressBar({ value, max, type }) {
 export default function Dashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { isTeacher, user } = useAuth()
 
   const likesCounter = useAnimatedCounter(stats?.totalLikes || 0, 1200, 0)
@@ -90,6 +91,7 @@ export default function Dashboard() {
       setStats(data)
     } catch (err) {
       console.error('Failed to load stats:', err)
+      setError(err.message || 'Error al cargar datos')
     } finally {
       setLoading(false)
     }
@@ -125,11 +127,11 @@ export default function Dashboard() {
     </div>
   )
 
-  if (!stats) return (
+  if (error && !stats) return (
     <div className="empty-state-container">
-      <div className="empty-state-icon-animated">😕</div>
+      <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>😕</div>
       <h3>Error al cargar datos</h3>
-      <p>No pudimos obtener la información del servidor.</p>
+      <p>{error}</p>
       <button className="btn btn-primary" onClick={loadStats}>Reintentar</button>
     </div>
   )

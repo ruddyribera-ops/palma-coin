@@ -41,6 +41,7 @@ export default function Rewards() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [selectedReward, setSelectedReward] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showConfetti, setShowConfetti] = useState(false)
   const [purchaseSuccess, setPurchaseSuccess] = useState(null)
   const { isTeacher, user } = useAuth()
@@ -59,6 +60,7 @@ export default function Rewards() {
 
   const loadData = async () => {
     try {
+      setError(null)
       const [rewardsData, studentsData, purchasesData] = await Promise.all([
         api.getRewards(),
         api.getStudents(),
@@ -69,6 +71,7 @@ export default function Rewards() {
       setPurchases(purchasesData)
     } catch (err) {
       console.error('Failed to load data:', err)
+      setError(err.message || 'Error al cargar recompensas')
     } finally {
       setLoading(false)
     }
@@ -128,6 +131,28 @@ export default function Rewards() {
         ))}
       </div>
       <div className="skeleton-card" style={{ height: '150px' }} />
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ padding: '2rem' }}>
+      <div className="page-header">
+        <div className="page-title">
+          <div className="page-title-icon">🎁</div>
+          <div>
+            <h1>Recompensas</h1>
+            <p className="page-subtitle">Catálogo de premios y canjes</p>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="empty-state-container">
+          <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>😕</div>
+          <h3>Error al cargar recompensas</h3>
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadData}>Reintentar</button>
+        </div>
+      </div>
     </div>
   )
 

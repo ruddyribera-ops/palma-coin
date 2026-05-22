@@ -6,6 +6,7 @@ export default function Assemblies() {
   const [assemblies, setAssemblies] = useState([])
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', date: new Date().toISOString().split('T')[0] })
   const [votedId, setVotedId] = useState(null)
@@ -17,6 +18,7 @@ export default function Assemblies() {
 
   const loadData = async () => {
     try {
+      setError(null)
       const [assembliesData, studentsData] = await Promise.all([
         api.getAssemblies(),
         api.getStudents()
@@ -25,6 +27,7 @@ export default function Assemblies() {
       setStudents(studentsData)
     } catch (err) {
       console.error('Failed to load:', err)
+      setError(err.message || 'Error al cargar asambleas')
     } finally {
       setLoading(false)
     }
@@ -77,6 +80,28 @@ export default function Assemblies() {
         {[...Array(3)].map((_, i) => (
           <div key={i} className="skeleton-card" style={{ height: '200px' }} />
         ))}
+      </div>
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ padding: '2rem' }}>
+      <div className="page-header">
+        <div className="page-title">
+          <div className="page-title-icon">🗳️</div>
+          <div>
+            <h1>Asambleas</h1>
+            <p className="page-subtitle">Votaciones y decisiones del gobierno estudiantil</p>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="empty-state-container">
+          <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>😕</div>
+          <h3>Error al cargar asambleas</h3>
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadData}>Reintentar</button>
+        </div>
       </div>
     </div>
   )

@@ -1,46 +1,47 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export function useWebSocket(onMessage) {
-  const wsRef = useRef(null);
   const [connected, setConnected] = useState(false);
   const reconnectTimeoutRef = useRef(null);
+  const eventSourceRef = useRef(null);
 
   const connect = useCallback(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    // Close existing connection if any
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    const eventsUrl = `${window.location.origin}/events`;
 
     try {
-      const ws = new WebSocket(wsUrl);
+      const es = new EventSource(eventsUrl);
 
-      ws.onopen = () => {
+      es.onopen = () => {
         setConnected(true);
-        console.log('WebSocket connected');
+        console.log('SSE connected');
       };
 
-      ws.onclose = () => {
-        setConnected(false);
-        console.log('WebSocket disconnected');
-        // Reconnect after 3 seconds
-        reconnectTimeoutRef.current = setTimeout(connect, 3000);
-      };
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-
-      ws.onmessage = (event) => {
+      es.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           onMessage(data);
         } catch (e) {
-          console.error('Failed to parse WebSocket message:', e);
+          console.error('Failed to parse SSE message:', e);
         }
       };
 
-      wsRef.current = ws;
+      es.onerror = () => {
+        console.log('SSE connection error — will reconnect in 3s');
+        setConnected(false);
+        es.close();
+        reconnectTimeoutRef.current = setTimeout(connect, 3000);
+      };
+
+      eventSourceRef.current = es;
     } catch (error) {
-      console.error('Failed to create WebSocket:', error);
+      console.error('Failed to create EventSource:', error);
       setConnected(false);
+      reconnectTimeoutRef.current = setTimeout(connect, 3000);
     }
   }, [onMessage]);
 
@@ -51,8 +52,9 @@ export function useWebSocket(onMessage) {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
     };
   }, [connect]);

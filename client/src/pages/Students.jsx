@@ -23,6 +23,7 @@ function ProgressBar({ value, max, type }) {
 export default function Students() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [editingStudent, setEditingStudent] = useState(null)
   const [form, setForm] = useState({ name: '' })
@@ -34,10 +35,12 @@ export default function Students() {
 
   const loadData = async () => {
     try {
+      setError(null)
       const data = await api.getStudents()
       setStudents(data.sort((a, b) => b.likes_balance - a.likes_balance))
     } catch (err) {
       console.error('Failed to load:', err)
+      setError(err.message || 'Error al cargar estudiantes')
     } finally {
       setLoading(false)
     }
@@ -87,6 +90,45 @@ export default function Students() {
         ))}
       </div>
       <div className="skeleton-card" style={{ height: '400px' }} />
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ padding: '2rem' }}>
+      <div className="card">
+        <div className="empty-state-container">
+          <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>😕</div>
+          <h3>Error al cargar estudiantes</h3>
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadData}>Reintentar</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (students.length === 0) return (
+    <div style={{ padding: '2rem' }}>
+      <div className="page-header">
+        <div className="page-title">
+          <div className="page-title-icon">👥</div>
+          <div>
+            <h1>Estudiantes</h1>
+            <p className="page-subtitle">Gestión de estudiantes del curso</p>
+          </div>
+        </div>
+      </div>
+      <div className="card">
+        <div className="empty-state-container">
+          <div className="empty-state-icon-animated" style={{ fontSize: '3rem' }}>👥</div>
+          <h3>No hay estudiantes registrados</h3>
+          <p>Agrega tu primer estudiante para comenzar a registrar transacciones.</p>
+          {isTeacher && (
+            <button className="btn btn-primary ripple" onClick={() => { setEditingStudent(null); setForm({ name: '' }); setShowModal(true) }}>
+              ➕ Agregar primer estudiante
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 
