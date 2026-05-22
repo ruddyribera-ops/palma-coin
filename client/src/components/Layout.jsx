@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Avatar from './Avatar'
 
 export default function Layout({ children }) {
   const { user, logout, isTeacher } = useAuth()
@@ -104,12 +105,12 @@ export default function Layout({ children }) {
           <div className="nav-user">
             {isTeacher && (
               <div className="user-badge teacher">
-                👨‍🏫 {user.name}
+                <Avatar name={user.name} size="sm" /> {user.name}
               </div>
             )}
             {!isTeacher && (
               <div className="user-badge">
-                🎓 {user.name}
+                <Avatar name={user.name} size="sm" /> {user.name}
               </div>
             )}
             <button className="btn btn-sm btn-secondary ripple" onClick={handleLogout}>

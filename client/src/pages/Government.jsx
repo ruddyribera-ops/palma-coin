@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
+import Avatar from '../components/Avatar'
 
 const roles = [
   {
@@ -120,11 +121,8 @@ export default function Government() {
 
               {holder ? (
                 <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)' }}>
-                  <div className="student-name" style={{ justifyContent: 'center' }}>
-                    <div className="student-avatar" style={{ background: `linear-gradient(135deg, ${role.color}, ${role.color}aa)` }}>
-                      {holder.name.charAt(0)}
-                    </div>
-                    <span style={{ fontWeight: 700, color: role.color }}>{holder.name}</span>
+                  <div style={{ justifyContent: 'center', display: 'flex' }}>
+                    <Avatar name={holder.name} size="md" showName />
                   </div>
                 </div>
               ) : (
@@ -177,10 +175,7 @@ export default function Government() {
                 {students.map(student => (
                   <tr key={student.id} className="student-row" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                     <td style={{ padding: '1rem' }}>
-                      <div className="student-name">
-                        <div className="student-avatar">{student.name.charAt(0)}</div>
-                        {student.name}
-                      </div>
+                      <Avatar name={student.name} size="sm" showName />
                     </td>
                     <td style={{ padding: '1rem' }}>
                       {student.role ? (

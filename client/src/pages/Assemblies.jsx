@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
+import Avatar from '../components/Avatar'
 
 export default function Assemblies() {
   const [assemblies, setAssemblies] = useState([])
@@ -248,10 +249,10 @@ export default function Assemblies() {
                 {assembly.user_vote && assembly.status === 'active' && (
                   <div style={{
                     padding: '1rem',
-                    background: 'rgba(24, 119, 242, 0.08)',
+                    background: 'rgba(0, 184, 148, 0.08)',
                     borderRadius: 'var(--radius-md)',
                     textAlign: 'center',
-                    color: 'var(--ig-blue)',
+                    color: 'var(--palm-green)',
                     fontWeight: 600
                   }}>
                     ✓ Ya emitiste tu voto en esta asamblea

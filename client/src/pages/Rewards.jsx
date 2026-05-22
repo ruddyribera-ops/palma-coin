@@ -1,37 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
-
-// Confetti component
-function Confetti() {
-  const colors = ['#FFD700', '#1877F2', '#E74C3C', '#00A86B', '#833AB4']
-  const pieces = [...Array(50)].map((_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 0.5,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    size: Math.random() * 8 + 6
-  }))
-
-  return (
-    <div className="confetti-container">
-      {pieces.map(p => (
-        <div
-          key={p.id}
-          className="confetti-piece"
-          style={{
-            left: `${p.left}%`,
-            animationDelay: `${p.delay}s`,
-            background: p.color,
-            width: p.size,
-            height: p.size,
-            borderRadius: Math.random() > 0.5 ? '50%' : '2px'
-          }}
-        />
-      ))}
-    </div>
-  )
-}
+import Avatar from '../components/Avatar'
+import Confetti from '../components/Confetti'
 
 export default function Rewards() {
   const [rewards, setRewards] = useState([])
@@ -266,7 +237,7 @@ export default function Rewards() {
               <tbody>
                 {purchases.slice(0, 10).map(purchase => (
                   <tr key={purchase.id} className="student-row">
-                    <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{purchase.student_name}</td>
+                    <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}><Avatar name={purchase.student_name} size="sm" showName /></td>
                     <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{purchase.reward_name}</td>
                     <td style={{ padding: '0.75rem', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                       <span style={{ color: purchase.cost_paid.startsWith('h') ? 'var(--heart-red)' : 'var(--like-blue)', fontWeight: 700 }}>
@@ -384,7 +355,7 @@ export default function Rewards() {
                         opacity: canAfford ? 1 : 0.5
                       }}
                     >
-                      <div className="student-avatar">{student.name.charAt(0)}</div>
+                      <Avatar name={student.name} size="md" />
                       <div className="student-info" style={{ flex: 1 }}>
                         <h4>{student.name}</h4>
                       </div>

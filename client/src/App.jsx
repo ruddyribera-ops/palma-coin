@@ -10,6 +10,7 @@ import Government from './pages/Government'
 import Students from './pages/Students'
 import Assemblies from './pages/Assemblies'
 import ManageStudents from './pages/ManageStudents'
+import Confetti from './components/Confetti'
 import { useState } from 'react'
 
 function ProtectedRoute({ children }) {
@@ -20,6 +21,7 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   const [toasts, setToasts] = useState([])
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const addToast = (message, type = 'info') => {
     const id = Date.now()
@@ -27,6 +29,11 @@ export default function App() {
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id))
     }, 4000)
+  }
+
+  const triggerConfetti = () => {
+    setShowConfetti(true)
+    setTimeout(() => setShowConfetti(false), 2500)
   }
 
   const handleWSMessage = (data) => {
@@ -39,9 +46,11 @@ export default function App() {
         break
       case 'TRANSACTION_ADDED':
         addToast(`+${data.data.transaction.amount} ${data.data.transaction.type === 'like' ? '👍' : '❤️'} para ${data.data.student.name}`, 'success')
+        triggerConfetti()
         break
       case 'BULK_TRANSACTIONS':
         addToast('Transacciones guardadas', 'success')
+        triggerConfetti()
         break
       case 'PURCHASE_MADE':
         addToast(`${data.data.student.name} canjeó una recompensa`, 'info')
@@ -63,6 +72,8 @@ export default function App() {
 
   return (
     <>
+      <Confetti active={showConfetti} />
+
       <Layout>
         <Routes>
           <Route path="/login" element={<Login />} />

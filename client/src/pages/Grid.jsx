@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
+import Avatar from '../components/Avatar'
 
 export default function Grid() {
   const [students, setStudents] = useState([])
@@ -257,12 +258,9 @@ export default function Grid() {
                 const hearts = grid[heartKey] || 0
 
                 return (
-                  <tr key={student.id} className="student-row">
+                    <tr key={student.id} className="student-row">
                     <td>
-                      <div className="student-name">
-                        <div className="student-avatar">{student.name.charAt(0)}</div>
-                        <span>{student.name}</span>
-                      </div>
+                      <Avatar name={student.name} size="sm" showName />
                     </td>
                     <td>
                       {isTeacher ? (

@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-import { pool, query, queryOne } from './helpers/db.js';
+import { pool, query, queryOne, dbType, initDbDriver } from './helpers/db.js';
 import { sseMiddleware } from './helpers/sse.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -73,8 +73,17 @@ app.get('*', (req, res) => {
 
 // ─── Database initialization ────────────────────────────────────────────────
 
+function pk() {
+  return dbType === 'sqlite' ? 'INTEGER PRIMARY KEY AUTOINCREMENT' : 'SERIAL PRIMARY KEY';
+}
+
 async function initDb() {
-  await pool.query(`
+  const createTable = async (ddl) => {
+    const adapted = ddl.replace(/SERIAL PRIMARY KEY/g, pk());
+    await pool.query(adapted);
+  };
+
+  await createTable(`
     CREATE TABLE IF NOT EXISTS students (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -84,14 +93,14 @@ async function initDb() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS subjects (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS transactions (
       id SERIAL PRIMARY KEY,
       student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
@@ -104,7 +113,7 @@ async function initDb() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS rewards (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -117,7 +126,7 @@ async function initDb() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS purchases (
       id SERIAL PRIMARY KEY,
       student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
@@ -127,7 +136,7 @@ async function initDb() {
       approved_by TEXT)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS assemblies (
       id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
@@ -137,7 +146,7 @@ async function initDb() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS assembly_votes (
       id SERIAL PRIMARY KEY,
       assembly_id INTEGER NOT NULL REFERENCES assemblies(id) ON DELETE CASCADE,
@@ -147,7 +156,7 @@ async function initDb() {
       UNIQUE(assembly_id, student_id))
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS autonomy_metrics (
       id SERIAL PRIMARY KEY,
       metric TEXT NOT NULL,
@@ -155,7 +164,7 @@ async function initDb() {
       recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
   `);
 
-  await pool.query(`
+  await createTable(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
@@ -168,13 +177,13 @@ async function initDb() {
   `);
 
   await seedIfEmpty();
-  await dropPlainPasswordColumn();
+  if (dbType === 'postgres') await dropPlainPasswordColumn();
 
   console.log('Database initialized');
 }
 
 async function seedIfEmpty() {
-  const studentCountRes = await pool.query('SELECT COUNT(*) FROM students');
+  const studentCountRes = await pool.query('SELECT COUNT(*) as count FROM students');
   if (parseInt(studentCountRes.rows[0].count) === 0) {
     const studentNames = [
       'ARACENA NAVARRO', 'BONILLA PEÑA', 'GASSER PEÑA AXL', 'GONZALES MOLINA',
@@ -189,7 +198,7 @@ async function seedIfEmpty() {
     console.log('Students seeded');
   }
 
-  const subjectCountRes = await pool.query('SELECT COUNT(*) FROM subjects');
+  const subjectCountRes = await pool.query('SELECT COUNT(*) as count FROM subjects');
   if (parseInt(subjectCountRes.rows[0].count) === 0) {
     const subjects = ['MATEMÁTICAS', 'LENGUAJE', 'INGLÉS', 'SCIENCE', 'ARTES', 'MÚSICA', 'ED. FÍSICA', 'TECNOLOGÍA', 'PORTUGUÉS', 'SOCIALES'];
     for (const name of subjects) {
@@ -198,7 +207,7 @@ async function seedIfEmpty() {
     console.log('Subjects seeded');
   }
 
-  const rewardCountRes = await pool.query('SELECT COUNT(*) FROM rewards');
+  const rewardCountRes = await pool.query('SELECT COUNT(*) as count FROM rewards');
   if (parseInt(rewardCountRes.rows[0].count) === 0) {
     const rewards = [
       ['Salida anticipada (5 min)', 'Salir 5 minutos antes del recreo', 15, null],
@@ -214,7 +223,7 @@ async function seedIfEmpty() {
     console.log('Rewards seeded');
   }
 
-  const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
+  const userCountRes = await pool.query('SELECT COUNT(*) as count FROM users');
   if (parseInt(userCountRes.rows[0].count) === 0) {
     const teacherHash = bcrypt.hashSync('palma2026', 10);
     await pool.query(
@@ -261,10 +270,12 @@ async function dropPlainPasswordColumn() {
 
 const PORT = process.env.PORT || 3001;
 
-// Start server even if DB init fails (SQLite fallback for local dev)
-initDb().then(() => {
+// Initialize DB driver first, then start
+initDbDriver().then(() => {
+  return initDb();
+}).then(() => {
   server.listen(PORT, () => console.log(`🚀 Palma Coin running at http://localhost:${PORT}`));
 }).catch(err => {
-  console.error('⚠️ Database unavailable, starting without DB:', err.message);
-  server.listen(PORT, () => console.log(`🚀 Palma Coin running at http://localhost:${PORT} (no DB)`));
+  console.error('⚠️ Error:', err.message);
+  server.listen(PORT, () => console.log(`🚀 Palma Coin running at http://localhost:${PORT} (degraded)`));
 });

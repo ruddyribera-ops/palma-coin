@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
+import Avatar from '../components/Avatar'
 
 // Animated counter hook
 function useAnimatedCounter(end, duration = 1000, delay = 0) {
@@ -193,13 +194,13 @@ export default function Dashboard() {
             <Link to="/students" className="btn btn-sm btn-secondary">Ver todos</Link>
           </div>
           <div className="card-body" style={{ padding: '0.75rem' }}>
-            {stats.topStudents.map((student, index) => (
+              {stats.topStudents.map((student, index) => (
               <div key={student.id} className="student-card" style={{ marginBottom: '0.5rem' }}>
                 <div className={`student-rank ${index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : ''}`}>
                   {index + 1}
                 </div>
                 <div className="student-info">
-                  <h4>{student.name}</h4>
+                  <h4><Avatar name={student.name} size="sm" showName /></h4>
                   <p>{getRoleIcon(student.role)} {student.role || 'Estudiante'}</p>
                 </div>
                 <div className="student-balances" style={{ flexDirection: 'column', gap: '0.25rem' }}>

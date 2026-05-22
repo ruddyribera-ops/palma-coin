@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
+import Avatar from '../components/Avatar'
 
 // Progress bar component
 function ProgressBar({ value, max, type }) {
@@ -158,9 +159,9 @@ export default function Students() {
             {/* 2nd place */}
             {top3[1] && (
               <div className="podium-item" style={{ order: 2 }}>
-                <div className="podium-avatar silver">
+                <div className="podium-avatar silver" style={{ background: 'none', padding: 0 }}>
                   <span className="podium-medal">🥈</span>
-                  {top3[1].name.charAt(0)}
+                  <Avatar name={top3[1].name} size="xl" />
                 </div>
                 <div className="podium-name">{top3[1].name.split(' ')[0]}</div>
                 <div className="podium-stat">👍 {top3[1].likes_balance}</div>
@@ -170,9 +171,9 @@ export default function Students() {
             {/* 1st place */}
             {top3[0] && (
               <div className="podium-item" style={{ order: 1 }}>
-                <div className="podium-avatar gold">
+                <div className="podium-avatar gold" style={{ background: 'none', padding: 0 }}>
                   <span className="podium-medal">🥇</span>
-                  {top3[0].name.charAt(0)}
+                  <Avatar name={top3[0].name} size="xl" />
                 </div>
                 <div className="podium-name">{top3[0].name.split(' ')[0]}</div>
                 <div className="podium-stat">👍 {top3[0].likes_balance}</div>
@@ -182,9 +183,9 @@ export default function Students() {
             {/* 3rd place */}
             {top3[2] && (
               <div className="podium-item" style={{ order: 3 }}>
-                <div className="podium-avatar bronze">
+                <div className="podium-avatar bronze" style={{ background: 'none', padding: 0 }}>
                   <span className="podium-medal">🥉</span>
-                  {top3[2].name.charAt(0)}
+                  <Avatar name={top3[2].name} size="xl" />
                 </div>
                 <div className="podium-name">{top3[2].name.split(' ')[0]}</div>
                 <div className="podium-stat">👍 {top3[2].likes_balance}</div>
@@ -225,10 +226,7 @@ export default function Students() {
                     </div>
                   </td>
                   <td>
-                    <div className="student-name">
-                      <div className="student-avatar">{student.name.charAt(0)}</div>
-                      <span>{student.name}</span>
-                    </div>
+                    <Avatar name={student.name} size="sm" showName />
                   </td>
                   <td>
                     {student.role ? (
