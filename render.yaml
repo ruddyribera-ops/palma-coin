@@ -1,0 +1,24 @@
+# Palma Coin — Render Blueprint
+# Conectá este repo a Render y provisiona Web Service + PostgreSQL automáticamente
+
+services:
+  - type: web
+    name: palma-coin
+    runtime: docker
+    repo: https://github.com/ruddyribera-ops/palma-coin
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: palma-coin-db
+          property: connectionString
+    healthCheckPath: /health
+
+databases:
+  - name: palma-coin-db
+    databaseName: palma_coin
+    plan: free
